@@ -1,4 +1,5 @@
-use std::{collections::BTreeSet, str::FromStr};
+#![feature(iter_array_chunks)]
+use std::collections::BTreeSet;
 
 use advent_of_code::load_file;
 
@@ -6,15 +7,16 @@ fn main() {
     let data = load_file("three");
     let list = data
         .split("\n")
-        .map(|s| s.parse())
-        .collect::<Result<Vec<Bag>, String>>()
+        .array_chunks::<3>()
+        .map(|s| (s[0], s[1], s[2]).try_into())
+        .collect::<Result<Vec<Group>, String>>()
         .unwrap();
-    let shared_items = list
+    let shared_badges = list
         .iter()
-        .map(|bag| bag.shared_item())
+        .map(|group| group.shared_badge())
         .collect::<Option<Vec<Item>>>()
         .unwrap();
-    let priorities: u32 = shared_items.iter().map(|i| i.value()).sum();
+    let priorities: u32 = shared_badges.iter().map(|i| i.value()).sum();
     println!("Ding ding, the answer is {priorities}");
 }
 
@@ -42,15 +44,13 @@ impl TryFrom<char> for Item {
     }
 }
 
-struct Bag {
-    first_pocket: Vec<Item>,
-    second_pocket: Vec<Item>,
-}
+struct Bag(Vec<Item>);
 
 impl Bag {
     fn shared_item(&self) -> Option<Item> {
-        let first_pocket = BTreeSet::from_iter(self.first_pocket.iter());
-        let second_pocket = BTreeSet::from_iter(self.second_pocket.iter());
+        let (first_pocket, second_pocket) = self.0.split_at(self.0.len() / 2);
+        let first_pocket = BTreeSet::from_iter(first_pocket.iter());
+        let second_pocket = BTreeSet::from_iter(second_pocket.iter());
         let shared_item = first_pocket
             .intersection(&second_pocket)
             .next()
@@ -60,20 +60,44 @@ impl Bag {
     }
 }
 
-impl FromStr for Bag {
-    type Err = String;
+impl TryFrom<&str> for Bag {
+    type Error = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (first_pocket, second_pocket) = s.split_at(s.len() / 2);
-        Ok(Self {
-            first_pocket: first_pocket
-                .chars()
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Ok(Self(
+            s.chars()
                 .map(|ch| Item::try_from(ch))
                 .collect::<Result<Vec<Item>, String>>()?,
-            second_pocket: second_pocket
-                .chars()
-                .map(|ch| Item::try_from(ch))
-                .collect::<Result<Vec<Item>, String>>()?,
-        })
+        ))
+    }
+}
+
+struct Group(Bag, Bag, Bag);
+
+impl TryFrom<(&str, &str, &str)> for Group {
+    type Error = String;
+    fn try_from(value: (&str, &str, &str)) -> Result<Self, Self::Error> {
+        Ok(Group(
+            value.0.try_into()?,
+            value.1.try_into()?,
+            value.2.try_into()?,
+        ))
+    }
+}
+
+impl Group {
+    fn shared_badge(&self) -> Option<Item> {
+        let one = BTreeSet::from_iter((self.0).0.iter());
+        let two = BTreeSet::from_iter((self.1).0.iter());
+        let three = BTreeSet::from_iter((self.2).0.iter());
+        let first_intersect: BTreeSet<&&Item> = one.intersection(&two).collect();
+        let second_intersect = two.intersection(&three).collect();
+        let shared_badge = first_intersect
+            .intersection(&second_intersect)
+            .next()
+            .cloned()
+            .cloned()
+            .cloned();
+        shared_badge
     }
 }
