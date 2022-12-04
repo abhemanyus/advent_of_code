@@ -9,7 +9,7 @@ fn main() {
         .iter()
         .filter(|f| {
             let overlap = f.overlap();
-            if overlap == f.0 || overlap == f.1 {
+            if overlap.1 >= overlap.0 {
                 return true;
             }
             false
