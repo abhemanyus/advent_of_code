@@ -1,13 +1,19 @@
+use std::collections::HashMap;
+
 use advent_of_code::load_file;
 
 fn main() {
     let data = load_file("seven");
-    let list = data
+    let commands = data
         .split("$ ")
         .filter(|l| l.len() > 0)
         .map(Command::try_from)
         .collect::<Result<Vec<_>, String>>()
         .unwrap();
+    let sizes = directory_sizes(commands);
+    let clear_size = 30000000 - (70000000 - sizes["//"]);
+    let total_size = sizes.values().filter(|s| **s > clear_size).min().unwrap();
+    println!("Ding ding, the answer is {total_size}");
 }
 
 #[derive(Debug)]
@@ -25,7 +31,6 @@ impl TryFrom<&str> for Entry {
         let entry = if first == "dir" {
             Self::Directory(Directory {
                 name: second.to_owned(),
-                enteries: Vec::new(),
             })
         } else {
             Self::File(File {
@@ -38,14 +43,7 @@ impl TryFrom<&str> for Entry {
         Ok(entry)
     }
 }
-impl Entry {
-    fn get_size(&self) -> usize {
-        match self {
-            Entry::File(file) => file.size,
-            Entry::Directory(dir) => dir.get_size(),
-        }
-    }
-}
+
 #[derive(Debug)]
 struct File {
     name: String,
@@ -54,17 +52,8 @@ struct File {
 #[derive(Debug)]
 struct Directory {
     name: String,
-    enteries: Vec<Entry>,
 }
-impl Directory {
-    fn get_size(&self) -> usize {
-        if self.enteries.len() == 0 {
-            0
-        } else {
-            self.enteries.iter().map(|e| e.get_size()).sum()
-        }
-    }
-}
+
 #[derive(Debug)]
 enum Command {
     List(List),
@@ -110,4 +99,53 @@ impl From<&str> for ChangeDir {
             dir => Self::Down(dir.to_owned()),
         }
     }
+}
+
+fn directory_sizes(commands: Vec<Command>) -> HashMap<String, usize> {
+    let mut stack: Vec<String> = Vec::new();
+    let mut sizes: HashMap<String, usize> = HashMap::new();
+    let mut cd_count = 0;
+    let mut ls_count = 0;
+    for command in commands {
+        match command {
+            Command::List(ls) => {
+                ls_count += 1;
+                for entry in ls.0 {
+                    match entry {
+                        Entry::File(file) => {
+                            for back in stack.iter() {
+                                sizes
+                                    .entry(back.to_string())
+                                    .and_modify(|v| *v += file.size)
+                                    .or_insert(file.size);
+                            }
+                        }
+                        Entry::Directory(dir) => {
+                            let dir_size = *sizes.get(&dir.name).unwrap_or(&0);
+                            for back in stack.iter() {
+                                sizes
+                                    .entry(back.to_string())
+                                    .and_modify(|v| *v += dir_size)
+                                    .or_insert(dir_size);
+                            }
+                        }
+                    }
+                }
+            }
+            Command::ChangeDir(cd) => {
+                cd_count += 1;
+                match cd {
+                    ChangeDir::Up => {
+                        stack.pop().unwrap();
+                    }
+                    ChangeDir::Down(dir) => {
+                        let name = stack.join("/") + "/" + &dir;
+                        stack.push(name);
+                    }
+                }
+            }
+        }
+    }
+    dbg!(cd_count, ls_count);
+    return sizes;
 }
