@@ -43,7 +43,6 @@ impl TryFrom<&str> for Entry {
         Ok(entry)
     }
 }
-
 #[derive(Debug)]
 struct File {
     name: String,
