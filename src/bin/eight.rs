@@ -7,19 +7,18 @@ use advent_of_code::load_file;
 
 fn main() {
     let data = load_file("eight");
-    let mut grid: Grid = data.as_str().into();
-    // grid[(1,1)].visible = false;
-    grid.visibility_check();
-    // println!("Grid:\n{}", &grid);
-    let score = grid.cells.iter().max_by_key(|tree| tree.score).unwrap();
-    println!("Max score: {}", score.score);
+    let grid: Grid = data.as_str().into();
+    // grid.set_scores();
+    // let score = grid.cells.iter().max_by_key(|tree| tree.score).unwrap();
+    let score = grid.calculate_score((2,3));
+    println!("Max: {}", score);
 }
 
 #[derive(Clone, Copy)]
 struct Tree {
     height: i8,
     visible: bool,
-    score: i32,
+    score: usize,
 }
 impl Display for Tree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -90,70 +89,66 @@ impl From<&str> for Grid {
 }
 
 impl Grid {
-    fn visibility_check(&mut self) {
-        self.check_north();
-        self.check_east();
-        self.check_south();
-        self.check_west();
-    }
-    fn check_north(&mut self) {
+    fn set_scores(&mut self) {
         for x in 0..self.width {
-            let mut max_height = -1;
-            let mut max_dist = 0;
             for y in 0..self.height {
-                let tree = self.index_mut((x, y));
-                if tree.height > max_height {
-                    tree.visible = true;
-                    max_height = tree.height;
-                    tree.score *= (y - max_dist) as i32;
-                    max_dist = y;
-                }
+                let score = self.calculate_score((x, y));
+                self.index_mut((x, y)).score = score;
             }
         }
     }
-    fn check_east(&mut self) {
-        for y in 0..self.height {
-            let mut max_height = -1;
-            let mut max_dist = self.width;
-            for x in (0..self.width).rev() {
-                let tree = self.index_mut((x, y));
-                if tree.height > max_height {
-                    tree.visible = true;
-                    max_height = tree.height;
-                    tree.score *= (max_dist - x) as i32;
-                    max_dist = x;
-                }
-            }
-        }
+    fn calculate_score(&self, index: (usize, usize)) -> usize {
+        self.calc_north(index)
+            * self.calc_south(index)
+            * self.calc_east(index)
+            * self.calc_west(index)
     }
-    fn check_south(&mut self) {
-        for x in 0..self.width {
-            let mut max_height = -1;
-            let mut max_dist = self.height;
-            for y in (0..self.height).rev() {
-                let tree = self.index_mut((x, y));
-                if tree.height > max_height {
-                    tree.visible = true;
-                    max_height = tree.height;
-                    tree.score *= (max_dist - y) as i32;
-                    max_dist = y;
-                }
+    fn calc_north(&self, index: (usize, usize)) -> usize {
+        let tree = self.index(index);
+        let mut steps = 0;
+        for y in (0..index.1).rev() {
+            if tree.height <= self.index((index.0, y)).height {
+                println!("North: {steps}");
+                return steps;
             }
+            steps += 1;
         }
+        return steps;
     }
-    fn check_west(&mut self) {
-        for y in 0..self.height {
-            let mut max_height = -1;
-            let mut max_dist = 0;
-            for x in 0..self.width {
-                let tree = self.index_mut((x, y));
-                if tree.height > max_height {
-                    tree.visible = true;
-                    max_height = tree.height;
-                    tree.score *= (x - max_dist) as i32;
-                    max_dist = x;
-                }
+    fn calc_east(&self, index: (usize, usize)) -> usize {
+        let tree = self.index(index);
+        let mut steps = 0;
+        for x in (index.0 + 1)..self.width {
+            if tree.height <= self.index((x, index.1)).height {
+                println!("East: {steps}");
+                return steps;
             }
+            steps += 1;
         }
+        return steps;
+    }
+    fn calc_south(&self, index: (usize, usize)) -> usize {
+        let tree = self.index(index);
+        let mut steps = 0;
+        for y in (index.1 + 1)..self.height {
+            if tree.height <= self.index((index.0, y)).height {
+                println!("South: {steps}");
+                return steps;
+            }
+            steps += 1;
+        }
+        return steps;
+    }
+    fn calc_west(&self, index: (usize, usize)) -> usize {
+        let tree = self.index(index);
+        let mut steps = 0;
+        for x in 0..index.0 {
+            if tree.height <= self.index((x, index.1)).height {
+                println!("West: {steps}");
+                return steps;
+            }
+            steps += 1;
+        }
+        return steps;
     }
 }
