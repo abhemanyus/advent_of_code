@@ -6,10 +6,9 @@ fn main() {
     let data = load_file("nine");
     let move_list: Vec<Move> = data.split("\n").map(Move::from).collect();
     let mut board = Board::default();
+    // println!("{}", &board);
     for mv in move_list {
-        println!("{:?}", mv);
         board.exec_move(mv);
-        println!("{}", &board);
     }
     println!("Total unique positions: {}", board.move_set.len());
 }
@@ -81,6 +80,12 @@ struct Position {
     y: i32,
 }
 
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{},{}]", self.x, self.y)
+    }
+}
+
 impl Add for Position {
     type Output = Position;
 
@@ -98,30 +103,35 @@ impl Position {
         let pos = self + dir;
         (pos, mv.decrease_magnitude())
     }
+
+    fn update_pos(&mut self, head: Position) {
+        let (dx, dy) = (head.x - self.x, head.y - self.y);
+        if dx.abs() > 1 {
+            self.x += dx.signum();
+            self.y += dy.signum();
+        } else if dy.abs() > 1 {
+            self.y += dy.signum();
+            self.x += dx.signum();
+        }
+    }
 }
 
 #[derive(Default, Debug)]
 struct Board {
-    head: Position,
-    tail: Position,
+    rope: [Position; 10],
     move_set: BTreeSet<Position>,
 }
 
 impl Board {
     fn exec_move(&mut self, mv: Move) {
-        let (new_head, new_mv) = self.head.exec_move(mv);
-        self.head = new_head;
-        let (dx, dy) = (self.head.x - self.tail.x, self.head.y - self.tail.y);
-        if dx.abs() > 1 {
-            self.tail.x += dx.signum();
-            self.tail.y += dy.signum();
+        let (head, mv) = self.rope[0].exec_move(mv);
+        self.rope[0] = head;
+        for i in 1..10 {
+            self.rope[i].update_pos(self.rope[i - 1]);
         }
-        if dy.abs() > 1 {
-            self.tail.y += dy.signum();
-            self.tail.x += dx.signum();
-        }
-        self.move_set.insert(self.tail);
-        if let Some(mv) = new_mv {
+        self.move_set.insert(self.rope[9]);
+        // println!("{}", &self);
+        if let Some(mv) = mv {
             self.exec_move(mv);
         }
     }
@@ -129,32 +139,18 @@ impl Board {
 
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "H: [{}, {}], T: [{},{}]",
-            self.head.x, self.head.y, self.tail.x, self.tail.y
-        )
+        for y in 0..6 {
+            for x in 0..6 {
+                let pos = Position { x, y };
+                let (i, _) = self.rope.iter().enumerate().find(|f| *f.1 == pos).unzip();
+                if let Some(i) = i {
+                    write!(f, "{}", i)?;
+                } else {
+                    write!(f, ".")?;
+                }
+            }
+            write!(f, "\n")?;
+        }
+        write!(f, "\n")
     }
-}
-
-#[test]
-fn board_test() {
-    let mv = Move::Up(1);
-    let mut board = Board::default();
-    board.exec_move(mv);
-    assert!(matches!(board.head, Position { x: 0, y: 1 }));
-}
-
-#[test]
-fn tail_test() {
-    let mut board = Board::default();
-    board.exec_move(Move::Up(1));
-    assert_eq!(board.move_set.len(), 1);
-    assert!(matches!(board.tail, Position { x: 0, y: 0 }));
-    board.exec_move(Move::Right(1));
-    assert_eq!(board.move_set.len(), 1);
-    assert!(matches!(board.tail, Position { x: 0, y: 0 }));
-    board.exec_move(Move::Right(1));
-    assert_eq!(board.move_set.len(), 2);
-    assert!(matches!(board.tail, Position { x: 1, y: 0 }));
 }
