@@ -7,11 +7,11 @@ use advent_of_code::load_file;
 
 fn main() {
     let data = load_file("eight");
-    let grid: Grid = data.as_str().into();
-    // grid.set_scores();
-    // let score = grid.cells.iter().max_by_key(|tree| tree.score).unwrap();
-    let score = grid.calculate_score((2,3));
-    println!("Max: {}", score);
+    let mut grid: Grid = data.as_str().into();
+    grid.set_scores();
+    let score = grid.cells.iter().max_by_key(|tree| tree.score).unwrap();
+    println!("Max: {}: {}", score, score.score);
+    // println!("Grid: {}\nScore: {}", grid, grid.calculate_score((2, 3)));
 }
 
 #[derive(Clone, Copy)]
@@ -107,11 +107,10 @@ impl Grid {
         let tree = self.index(index);
         let mut steps = 0;
         for y in (0..index.1).rev() {
+            steps += 1;
             if tree.height <= self.index((index.0, y)).height {
-                println!("North: {steps}");
                 return steps;
             }
-            steps += 1;
         }
         return steps;
     }
@@ -119,11 +118,10 @@ impl Grid {
         let tree = self.index(index);
         let mut steps = 0;
         for x in (index.0 + 1)..self.width {
+            steps += 1;
             if tree.height <= self.index((x, index.1)).height {
-                println!("East: {steps}");
                 return steps;
             }
-            steps += 1;
         }
         return steps;
     }
@@ -131,23 +129,21 @@ impl Grid {
         let tree = self.index(index);
         let mut steps = 0;
         for y in (index.1 + 1)..self.height {
+            steps += 1;
             if tree.height <= self.index((index.0, y)).height {
-                println!("South: {steps}");
                 return steps;
             }
-            steps += 1;
         }
         return steps;
     }
     fn calc_west(&self, index: (usize, usize)) -> usize {
         let tree = self.index(index);
         let mut steps = 0;
-        for x in 0..index.0 {
+        for x in (0..index.0).rev() {
+            steps += 1;
             if tree.height <= self.index((x, index.1)).height {
-                println!("West: {steps}");
                 return steps;
             }
-            steps += 1;
         }
         return steps;
     }
