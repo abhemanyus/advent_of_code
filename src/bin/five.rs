@@ -72,7 +72,7 @@ impl TryFrom<&str> for Hold {
     type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let lines: Vec<&str> = value.split("\n").filter(|str| str.len() > 0).collect();
+        let lines: Vec<&str> = value.split('\n').filter(|str| !str.is_empty()).collect();
         let mut hold: Vec<Stack> =
             vec![Stack(Vec::new()); (lines.first().map(|f| f.len()).unwrap_or_default() + 1) / 4];
         for line in lines.iter().rev().skip(1) {
@@ -96,7 +96,7 @@ impl TryFrom<&str> for Move {
     type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let tokens = value.split(" ");
+        let tokens = value.split(' ');
         match tokens.collect::<Vec<&str>>()[..] {
             [_, amount, _, from, _, to] => Ok(Move {
                 amount: amount
@@ -131,8 +131,8 @@ impl TryFrom<&str> for Crane {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let lines = value
-            .split("\n")
-            .filter(|l| l.len() > 0)
+            .split('\n')
+            .filter(|l| !l.is_empty())
             .map(Move::try_from)
             .collect::<Result<VecDeque<Move>, String>>()?;
         Ok(Self(lines))

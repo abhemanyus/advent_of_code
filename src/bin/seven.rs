@@ -6,7 +6,7 @@ fn main() {
     let data = load_file("seven");
     let commands = data
         .split("$ ")
-        .filter(|l| l.len() > 0)
+        .filter(|l| !l.is_empty())
         .map(Command::try_from)
         .collect::<Result<Vec<_>, String>>()
         .unwrap();
@@ -26,7 +26,7 @@ impl TryFrom<&str> for Entry {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (first, second) = value
-            .split_once(" ")
+            .split_once(' ')
             .ok_or(format!("{value} is a single word"))?;
         let entry = if first == "dir" {
             Self::Directory(Directory {
@@ -62,8 +62,8 @@ impl TryFrom<&str> for Command {
     type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let (command, other) = value.split_once("\n").ok_or(format!("{value} is empty"))?;
-        if let Some(("cd", second)) = command.split_once(" ") {
+        let (command, other) = value.split_once('\n').ok_or(format!("{value} is empty"))?;
+        if let Some(("cd", second)) = command.split_once(' ') {
             Ok(Self::ChangeDir(second.into()))
         } else if command == "ls" {
             Ok(Self::List(other.try_into()?))
@@ -79,8 +79,8 @@ impl TryFrom<&str> for List {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let entries = value
-            .split("\n")
-            .filter(|l| l.len() > 0)
+            .split('\n')
+            .filter(|l| !l.is_empty())
             .map(Entry::try_from)
             .collect::<Result<Vec<Entry>, String>>()?;
         Ok(Self(entries))
@@ -146,5 +146,5 @@ fn directory_sizes(commands: Vec<Command>) -> HashMap<String, usize> {
         }
     }
     dbg!(cd_count, ls_count);
-    return sizes;
+    sizes
 }

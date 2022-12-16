@@ -31,11 +31,11 @@ impl Display for Tree {
 }
 impl From<char> for Tree {
     fn from(value: char) -> Self {
-        return Tree {
+        Tree {
             height: (value as i8) & 0x0F,
             visible: false,
             score: 1,
-        };
+        }
     }
 }
 struct Grid {
@@ -46,38 +46,38 @@ struct Grid {
 
 impl Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}x{}\n", self.width, self.height)?;
+        writeln!(f, "{}x{}", self.width, self.height)?;
         for (index, tree) in self.cells.iter().enumerate() {
-            write!(f, "{} ", tree)?;
+            write!(f, "{tree} ")?;
             if (index + 1) % self.width == 0 {
-                write!(f, "\n")?;
+                writeln!(f)?;
             }
         }
-        write!(f, "\n")
+        writeln!(f)
     }
 }
 
 impl Index<(usize, usize)> for Grid {
     type Output = Tree;
     fn index(&self, index: (usize, usize)) -> &Self::Output {
-        return &self.cells[index.0 + index.1 * self.width];
+        &self.cells[index.0 + index.1 * self.width]
     }
 }
 impl IndexMut<(usize, usize)> for Grid {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        return &mut self.cells[index.0 + index.1 * self.width];
+        &mut self.cells[index.0 + index.1 * self.width]
     }
 }
 
 impl From<&str> for Grid {
     fn from(value: &str) -> Self {
-        let lines = value.split("\n").collect::<Vec<&str>>();
+        let lines = value.split('\n').collect::<Vec<&str>>();
         let height = lines.len();
         let width = lines[0].len();
         let mut grid = Grid {
             cells: Vec::with_capacity(height * width),
-            height: height,
-            width: width,
+            height,
+            width,
         };
         for line in lines {
             for ch in line.chars() {
@@ -112,7 +112,7 @@ impl Grid {
                 return steps;
             }
         }
-        return steps;
+        steps
     }
     fn calc_east(&self, index: (usize, usize)) -> usize {
         let tree = self.index(index);
@@ -123,7 +123,7 @@ impl Grid {
                 return steps;
             }
         }
-        return steps;
+        steps
     }
     fn calc_south(&self, index: (usize, usize)) -> usize {
         let tree = self.index(index);
@@ -134,7 +134,7 @@ impl Grid {
                 return steps;
             }
         }
-        return steps;
+        steps
     }
     fn calc_west(&self, index: (usize, usize)) -> usize {
         let tree = self.index(index);
@@ -145,6 +145,6 @@ impl Grid {
                 return steps;
             }
         }
-        return steps;
+        steps
     }
 }

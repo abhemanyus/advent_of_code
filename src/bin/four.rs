@@ -26,7 +26,7 @@ impl TryFrom<&str> for Section {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (start, end) = value
-            .split_once("-")
+            .split_once('-')
             .ok_or(format!("{value} is not valid Section"))?;
         Ok(Self(
             start.parse().or(Err(format!("{start} is not u32")))?,
@@ -49,7 +49,7 @@ impl TryFrom<&str> for Pair {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (first, second) = value
-            .split_once(",")
+            .split_once(',')
             .ok_or(format!("{value} is not valid Pair"))?;
         Ok(Self(first.try_into()?, second.try_into()?))
     }
@@ -62,7 +62,7 @@ impl TryFrom<&str> for List {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let list = value
-            .split("\n")
+            .split('\n')
             .map(Pair::try_from)
             .collect::<Result<_, _>>()?;
         Ok(Self(list))

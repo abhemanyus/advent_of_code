@@ -5,7 +5,7 @@ use advent_of_code::load_file;
 fn main() {
     let data = load_file("two");
     let score: u32 = data
-        .split("\n")
+        .split('\n')
         .map(|plan| {
             let plan: Plan = plan.parse().unwrap();
             let game: Game = plan.into();
@@ -55,7 +55,7 @@ struct Game(ElfMove, PlayerMove);
 impl FromStr for Game {
     type Err = String;
     fn from_str(game: &str) -> Result<Self, Self::Err> {
-        let strings: Vec<&str> = game.split(" ").collect();
+        let strings: Vec<&str> = game.split(' ').collect();
         let (elf, player) = (strings[0], strings[1]);
         Ok(Self(elf.parse()?, player.parse()?))
     }
@@ -136,8 +136,8 @@ impl Move {
 impl Game {
     fn score(&self) -> u32 {
         let game_result = (self.1).0.end_game(self.0 .0);
-        let score = game_result.score() + (self.1).0.score();
-        return score;
+        
+        game_result.score() + (self.1).0.score()
     }
 }
 
@@ -152,7 +152,7 @@ struct Plan(ElfMove, EndGame);
 impl FromStr for Plan {
     type Err = String;
     fn from_str(game: &str) -> Result<Self, Self::Err> {
-        let strings: Vec<&str> = game.split(" ").collect();
+        let strings: Vec<&str> = game.split(' ').collect();
         let (elf, end_game) = (strings[0], strings[1]);
         Ok(Self(elf.parse()?, end_game.parse()?))
     }

@@ -2,7 +2,7 @@ use advent_of_code::load_file;
 
 fn main() {
     let data = load_file("ten");
-    let instructions = data.split("\n").map(Instruction::from);
+    let instructions = data.split('\n').map(Instruction::from);
     let mut cpu = CPU::new(instructions);
     let mut accumulator = 0;
     while cpu.tick().is_some() {

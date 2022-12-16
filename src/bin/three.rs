@@ -6,7 +6,7 @@ use advent_of_code::load_file;
 fn main() {
     let data = load_file("three");
     let list = data
-        .split("\n")
+        .split('\n')
         .array_chunks::<3>()
         .map(|s| (s[0], s[1], s[2]).try_into())
         .collect::<Result<Vec<Group>, String>>()
@@ -66,7 +66,7 @@ impl TryFrom<&str> for Bag {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         Ok(Self(
             s.chars()
-                .map(|ch| Item::try_from(ch))
+                .map(Item::try_from)
                 .collect::<Result<Vec<Item>, String>>()?,
         ))
     }

@@ -4,7 +4,7 @@ use advent_of_code::load_file;
 
 fn main() {
     let data = load_file("nine");
-    let move_list: Vec<Move> = data.split("\n").map(Move::from).collect();
+    let move_list: Vec<Move> = data.split('\n').map(Move::from).collect();
     let mut board = Board::default();
     // println!("{}", &board);
     for mv in move_list {
@@ -23,7 +23,7 @@ enum Move {
 
 impl From<&str> for Move {
     fn from(value: &str) -> Self {
-        let (mv, val) = value.split_once(" ").unwrap();
+        let (mv, val) = value.split_once(' ').unwrap();
         let val: u32 = val.parse().unwrap();
         match mv {
             "U" => Self::Up(val),
@@ -144,13 +144,13 @@ impl Display for Board {
                 let pos = Position { x, y };
                 let (i, _) = self.rope.iter().enumerate().find(|f| *f.1 == pos).unzip();
                 if let Some(i) = i {
-                    write!(f, "{}", i)?;
+                    write!(f, "{i}")?;
                 } else {
                     write!(f, ".")?;
                 }
             }
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
-        write!(f, "\n")
+        writeln!(f)
     }
 }
