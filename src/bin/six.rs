@@ -4,7 +4,7 @@ use advent_of_code::load_file;
 const MARKER: usize = 14;
 
 fn main() {
-    let data = load_file("six");
+    let data = load_file!("six");
     let mut chars = data.chars();
     let mut buffer: [char; MARKER] = chars.next_chunk().unwrap();
     for (i, ch) in chars.enumerate() {

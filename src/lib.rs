@@ -1,6 +1,6 @@
-use std::fs;
-
-pub fn load_file(name: &str) -> String {
-    let path = format!("data/{name}.txt");
-    fs::read_to_string(path).unwrap()
+#[macro_export]
+macro_rules! load_file {
+    ($file:literal) => {
+        std::fs::read_to_string(concat!("data/", $file, ".txt")).unwrap()
+    };
 }

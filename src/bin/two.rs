@@ -3,7 +3,7 @@ use std::str::FromStr;
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("two");
+    let data = load_file!("two");
     let score: u32 = data
         .split('\n')
         .map(|plan| {

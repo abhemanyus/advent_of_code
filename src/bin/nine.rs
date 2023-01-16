@@ -3,7 +3,7 @@ use std::{collections::BTreeSet, fmt::Display, ops::Add};
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("nine");
+    let data = load_file!("nine");
     let move_list: Vec<Move> = data.split('\n').map(Move::from).collect();
     let mut board = Board::default();
     // println!("{}", &board);

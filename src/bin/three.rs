@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("three");
+    let data = load_file!("three");
     let list = data
         .split('\n')
         .array_chunks::<3>()

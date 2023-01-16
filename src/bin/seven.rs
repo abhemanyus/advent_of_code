@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("seven");
+    let data = load_file!("seven");
     let commands = data
         .split("$ ")
         .filter(|l| !l.is_empty())

@@ -1,7 +1,7 @@
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("four");
+    let data = load_file!("four");
     let list: Result<List, String> = data.as_str().try_into();
     let count = list
         .unwrap()

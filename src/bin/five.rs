@@ -6,7 +6,7 @@ use std::{
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("five");
+    let data = load_file!("five");
     let split_index = data.find("\nmove").unwrap();
     let (stacks, moves) = data.split_at(split_index);
     let mut hold = Hold::try_from(stacks).unwrap();

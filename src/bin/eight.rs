@@ -6,7 +6,7 @@ use std::{
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file("eight");
+    let data = load_file!("eight");
     let mut grid: Grid = data.as_str().into();
     grid.set_scores();
     let score = grid.cells.iter().max_by_key(|tree| tree.score).unwrap();
