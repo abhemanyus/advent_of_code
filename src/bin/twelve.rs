@@ -1,13 +1,26 @@
 #![feature(generic_const_exprs)]
-use std::fmt::Display;
+#![feature(slice_flatten)]
 use advent_of_code::load_file;
+use std::fmt::Display;
 
 fn main() {
     let data = load_file!("twelve");
     let graph: Graph<61, 41> = data.as_str().into();
-    let (matrix, start, end) = graph.matrix();
-    let path = dijkstra(matrix, start, end);
-    println!("Path: {:?}", path.len());
+    let (matrix, _, end) = graph.matrix();
+    let mut min = usize::MAX;
+    for (ass, _) in graph
+        .tiles
+        .flatten()
+        .iter()
+        .enumerate()
+        .filter(|(_, h)| **h == 0)
+    {
+        let path = dijkstra(&matrix, ass, end).len();
+        if path < min {
+            min = path;
+        }
+    }
+    println!("Path: {:?}", min);
 }
 
 type Tile = [usize; 2];
@@ -27,8 +40,8 @@ impl<const X: usize, const Y: usize> Graph<X, Y> {
         }
     }
 
-    fn matrix(&self) -> ([[bool; X*Y]; X*Y], usize, usize) {
-        let mut matrix = [[false; X*Y]; X*Y];
+    fn matrix(&self) -> ([[bool; X * Y]; X * Y], usize, usize) {
+        let mut matrix = [[false; X * Y]; X * Y];
         for y in 0..Y {
             for x in 0..X {
                 let this_node = Self::tile_to_node([x, y]);
@@ -38,7 +51,11 @@ impl<const X: usize, const Y: usize> Graph<X, Y> {
                 }
             }
         }
-        (matrix, Self::tile_to_node(self.start), Self::tile_to_node(self.end))
+        (
+            matrix,
+            Self::tile_to_node(self.start),
+            Self::tile_to_node(self.end),
+        )
     }
 
     fn tile_to_node(tile: Tile) -> usize {
@@ -154,7 +171,7 @@ impl<const X: usize, const Y: usize> From<&str> for Graph<X, Y> {
     }
 }
 
-fn dijkstra<const N: usize>(matrix: [[bool; N]; N], start: usize, end: usize) -> Vec<usize> {
+fn dijkstra<const N: usize>(matrix: &[[bool; N]; N], start: usize, end: usize) -> Vec<usize> {
     let mut visited = [false; N];
     let mut dist = [usize::MAX; N];
     let mut path = [usize::MAX; N];
@@ -171,7 +188,9 @@ fn dijkstra<const N: usize>(matrix: [[bool; N]; N], start: usize, end: usize) ->
             }
         }
         visited[current] = true;
-        if current == end {break;}
+        if current == end {
+            break;
+        }
         (current, _) = dist
             .iter()
             .enumerate()
@@ -184,10 +203,9 @@ fn dijkstra<const N: usize>(matrix: [[bool; N]; N], start: usize, end: usize) ->
     while current != usize::MAX {
         path_vec.push(current);
         current = path[current];
-    };
+    }
     path_vec.reverse();
     path_vec
-    
 }
 
 #[test]
@@ -203,6 +221,6 @@ fn dijkstra_test() {
         [true, true, false, false, false, false, false, false, true],
         [false, false, true, false, false, false, true, true, false],
     ];
-    let path = dijkstra(matrix, 0, 4);
+    let path = dijkstra(&matrix, 0, 4);
     dbg!(path);
 }
