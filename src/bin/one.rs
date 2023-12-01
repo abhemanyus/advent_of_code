@@ -3,7 +3,7 @@ use std::str::FromStr;
 use advent_of_code::load_file;
 
 fn main() {
-    let data = load_file!("two");
+    let data = load_file!("one");
     let score: u32 = data
         .split('\n')
         .map(|plan| {
@@ -136,7 +136,7 @@ impl Move {
 impl Game {
     fn score(&self) -> u32 {
         let game_result = (self.1).0.end_game(self.0 .0);
-        
+
         game_result.score() + (self.1).0.score()
     }
 }
