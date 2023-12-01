@@ -1,62 +1,45 @@
+use std::str::Chars;
+
 fn main() {
-    let input = advent_of_code::load_file!("thirteen");
-    let first = input.split('\n').next().unwrap();
-    println!("{}", first);
-    let list = Item::from_str(first);
-    dbg!(&list);
-    println!("{}", Item::to_string(&list));
+    let sample = "[1,[2,3],4,5]";
+    let list = parse_list(&mut sample.chars());
+    println!("list: {:?}", list);
 }
 
 #[derive(Debug)]
 enum Item {
-    Number(u32),
     List(Vec<Item>),
+    Value(i32),
 }
 
-impl Item {
-    fn from_str(s: &str) -> Vec<Item> {
-        let mut list = Vec::new();
-        let tokens: Vec<String> = s
-            .to_string()
-            .split(",")
-            .map(|s| s.to_string())
-            .collect();
-        Self::from_str_self(&tokens, &mut list);
-        list
-    }
-    fn from_str_self(s: &[String], list: &mut Vec<Item>) {
-        for token in s {
-            match token.as_str() {
-                "[" => {
-                    let mut sub_list = Vec::new();
-                    Self::from_str_self(&s[1..], &mut sub_list);
-                    list.push(Item::List(sub_list));
+fn parse_list(characters: &mut Chars) -> Vec<Item> {
+    let mut vec = Vec::new();
+    let mut buffer = String::new();
+    loop {
+        let Some(c) = characters.next() else {
+            break;
+        };
+        match c {
+            '[' => {
+                vec.push(Item::List(parse_list(characters)));
+            }
+            ']' => {
+                if let Ok(num) = buffer.parse::<i32>() {
+                    vec.push(Item::Value(num));
+                    buffer.clear();
                 }
-                "]" => return,
-                digit => {
-                    list.push(Item::Number(digit.parse::<u32>().unwrap()));
+                return vec;
+            }
+            ',' => {
+                if let Ok(num) = buffer.parse::<i32>() {
+                    vec.push(Item::Value(num));
+                    buffer.clear();
                 }
+            }
+            digit => {
+                buffer.push(digit);
             }
         }
     }
-    fn to_string(list: &Vec<Item>) -> String {
-        let mut string = String::from("[");
-        Self::to_string_self(list, &mut string);
-        string.push_str("]");
-        string
-    }
-    fn to_string_self(list: &Vec<Item>, string: &mut String) {
-        for item in list {
-            match item {
-                Item::Number(n) => {
-                    string.push_str(&n.to_string());
-                }
-                Item::List(l) => {
-                    string.push_str("[");
-                    Item::to_string_self(l, string);
-                }
-            }
-        }
-        string.push_str("]")
-    }
+    vec
 }
